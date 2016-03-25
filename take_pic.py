@@ -1,4 +1,3 @@
-import RPi.GPIO as GPIO
 import datetime
 import pygame,sys
 from pygame.locals import *
