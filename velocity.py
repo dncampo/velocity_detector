@@ -1,8 +1,8 @@
-import RPi.GPIO as GPIO
 import datetime
-import pygame, sys
-from pygame.locals import *
 import time
+
+import RPi.GPIO as GPIO
+import pygame, sys
 import pygame.camera
 
 MS_2_KMH = 3.6 #conversion metros/segundos a km/h
