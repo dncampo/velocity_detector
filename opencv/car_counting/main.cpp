@@ -5,6 +5,9 @@
 #include<opencv2/imgproc/imgproc.hpp>
 
 #include<iostream>
+#include<iomanip>
+#include<sys/time.h>
+#include<unistd.h>
 
 #include "Blob.h"
 
@@ -17,7 +20,7 @@ using namespace std;
 const cv::Scalar SCALAR_BLACK = cv::Scalar(0.0, 0.0, 0.0);
 const cv::Scalar SCALAR_WHITE = cv::Scalar(255.0, 255.0, 255.0);
 const cv::Scalar SCALAR_YELLOW = cv::Scalar(0.0, 255.0, 255.0);
-const cv::Scalar SCALAR_GREEN = cv::Scalar(0.0, 200.0, 0.0);
+const cv::Scalar SCALAR_GREEN = cv::Scalar(0.0, 255.0, 0.0);
 const cv::Scalar SCALAR_RED = cv::Scalar(0.0, 0.0, 255.0);
 
 // function prototypes ////////////////////////////////////////////////////////////////////////////
@@ -27,7 +30,7 @@ void addNewBlob(Blob &currentFrameBlob, vector<Blob> &existingBlobs);
 double distanceBetweenPoints(cv::Point point1, cv::Point point2);
 void drawAndShowContours(cv::Size imageSize, vector<vector<cv::Point> > contours, string strImageName);
 void drawAndShowContours(cv::Size imageSize, vector<Blob> blobs, string strImageName);
-bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intHorizontalLinePosition, int &carCount);
+bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intHorizontalLinePosition, int &carCount, int);
 void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 
@@ -42,6 +45,7 @@ int main(void) {
     vector<Blob> blobs;
 
     cv::Point crossingLine[2];
+    cv::Point crossingLine2[2];
 
     int carCount = 0;
     
@@ -64,13 +68,20 @@ int main(void) {
     capVideo.read(imgFrame1);
     capVideo.read(imgFrame2);
 
-    int intHorizontalLinePosition = (int)round((double)imgFrame1.rows * 0.35);
+    int intHorizontalLinePosition = (int)round((double)imgFrame1.rows * 0.90);
+    int intHorizontalLinePosition2 = (int)round((double)imgFrame1.rows * 0.30);
 
     crossingLine[0].x = 0;
     crossingLine[0].y = intHorizontalLinePosition;
 
     crossingLine[1].x = imgFrame1.cols - 1;
     crossingLine[1].y = intHorizontalLinePosition;
+
+    crossingLine2[0].x = 0;
+    crossingLine2[0].y = intHorizontalLinePosition2;
+
+    crossingLine2[1].x = imgFrame1.cols - 1;
+    crossingLine2[1].y = intHorizontalLinePosition2;
 
     char chCheckForEscKey = 0;
 
@@ -156,14 +167,19 @@ int main(void) {
         imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
 
         drawBlobInfoOnImage(blobs, imgFrame2Copy);
+        bool blnAtLeastOneBlobCrossedTheLine[2];
+        blnAtLeastOneBlobCrossedTheLine[0] = checkIfBlobsCrossedTheLine(blobs, intHorizontalLinePosition, carCount, 0);
+        blnAtLeastOneBlobCrossedTheLine[1] = checkIfBlobsCrossedTheLine(blobs, intHorizontalLinePosition2, carCount, 1);
 
-        bool blnAtLeastOneBlobCrossedTheLine = checkIfBlobsCrossedTheLine(blobs, intHorizontalLinePosition, carCount);
-
-        if (blnAtLeastOneBlobCrossedTheLine == true) {
+        if (blnAtLeastOneBlobCrossedTheLine[0] == true) {
             cv::line(imgFrame2Copy, crossingLine[0], crossingLine[1], SCALAR_GREEN, 2);
-        }
-        else {
+        } else {
             cv::line(imgFrame2Copy, crossingLine[0], crossingLine[1], SCALAR_RED, 2);
+        }
+        if (blnAtLeastOneBlobCrossedTheLine[1] == true) {
+            cv::line(imgFrame2Copy, crossingLine2[0], crossingLine2[1], SCALAR_GREEN, 2);
+        } else {
+            cv::line(imgFrame2Copy, crossingLine2[0], crossingLine2[1], SCALAR_RED, 2);
         }
 
         drawCarCountOnImage(carCount, imgFrame2Copy);
@@ -309,19 +325,24 @@ void drawAndShowContours(cv::Size imageSize, vector<Blob> blobs, string strImage
     cv::imshow(strImageName, image);
 }
 
+long int getTs() {
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    return tp.tv_sec * 1000 + tp.tv_usec / 1000;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intHorizontalLinePosition, int &carCount) {
+bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intHorizontalLinePosition, int &carCount, int line) {
     bool blnAtLeastOneBlobCrossedTheLine = false;
+    for (int i=0; i<blobs.size(); i++) {
+        if (blobs[i].blnStillBeingTracked == true && blobs[i].centerPositions.size() >= 2) {
+            int prevFrameIndex = (int)blobs[i].centerPositions.size() - 2;
+            int currFrameIndex = (int)blobs[i].centerPositions.size() - 1;
 
-    for (auto blob : blobs) {
-
-        if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) {
-            int prevFrameIndex = (int)blob.centerPositions.size() - 2;
-            int currFrameIndex = (int)blob.centerPositions.size() - 1;
-
-            if (blob.centerPositions[prevFrameIndex].y > intHorizontalLinePosition && blob.centerPositions[currFrameIndex].y <= intHorizontalLinePosition) {
+            if (blobs[i].centerPositions[prevFrameIndex].y > intHorizontalLinePosition && blobs[i].centerPositions[currFrameIndex].y <= intHorizontalLinePosition) {
                 carCount++;
                 blnAtLeastOneBlobCrossedTheLine = true;
+                blobs[i].ts[line] = getTs();
             }
         }
 
@@ -336,13 +357,23 @@ void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy) {
     for (unsigned int i = 0; i < blobs.size(); i++) {
 
         if (blobs[i].blnStillBeingTracked == true) {
-            cv::rectangle(imgFrame2Copy, blobs[i].currentBoundingRect, SCALAR_RED, 2);
+            cv::rectangle(imgFrame2Copy, blobs[i].currentBoundingRect, SCALAR_BLACK, 2);
 
             int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
             double dblFontScale = blobs[i].dblCurrentDiagonalSize / 60.0;
             int intFontThickness = (int)round(dblFontScale * 1.0);
 
-            cv::putText(imgFrame2Copy, to_string(i), blobs[i].centerPositions.back(), intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
+            Blob b = blobs[i];
+            cv::Point p = b.centerPositions.back();
+            p.y += 50;;
+
+            cv::putText(imgFrame2Copy, to_string(i), blobs[i].centerPositions.back(), intFontFace, dblFontScale/2, SCALAR_RED, intFontThickness);
+            if (b.getSpeed(30.0)!= 0) {
+                stringstream stream;
+                stream << fixed << setprecision(1) << b.getSpeed(30.0);
+                string s = stream.str();
+                cv::putText(imgFrame2Copy, s + " Km/h" , p, intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
+            }
         }
     }
 }

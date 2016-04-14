@@ -29,11 +29,17 @@ public:
 
     int intNumOfConsecutiveFramesWithoutAMatch;
 
+    long int ts[2];
+    float speed;
+
+
     cv::Point predictedNextPosition;
 
     // function prototypes ////////////////////////////////////////////////////////////////////////
     Blob(std::vector<cv::Point> _contour);
     void predictNextPosition(void);
+    double getSpeed(float distance);
+
 
 };
 

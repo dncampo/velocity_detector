@@ -1,6 +1,7 @@
 // Blob.cpp
 
 #include "Blob.h"
+#include <iostream>
 using namespace std;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 Blob::Blob(vector<cv::Point> _contour) {
@@ -24,6 +25,24 @@ Blob::Blob(vector<cv::Point> _contour) {
     blnCurrentMatchFoundOrNewBlob = true;
 
     intNumOfConsecutiveFramesWithoutAMatch = 0;
+
+    ts[0] = ts[1] = 0;
+    speed = 0.0;
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+double Blob::getSpeed(float distance){
+    if (speed != 0.0) return speed;
+    long int delta = ts[1] - ts[0];
+cout << "ts[0]: "  << ts[0] << "  ts[1]: " << ts[1] << endl;
+
+    if (delta <= 0.0) return 0;
+    double deltaH = delta / 1000.0;
+    double distanceKM = distance / 1000.0;
+    speed = distanceKM/(deltaH/3600);
+cout << "speed: "  << speed << endl;
+    return speed;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
