@@ -56,12 +56,6 @@ int main(void) {
         return(0);                                                              // and exit program
     }
 
-    if (capVideo.get(CV_CAP_PROP_FRAME_COUNT) < 2) {
-        cout << "error: video file must have at least two frames";
-        //_getch();                   // it may be necessary to change or remove this line if not using Windows
-        return(0);
-    }
-
     capVideo.read(imgFrame1);
     capVideo.read(imgFrame2);
 
