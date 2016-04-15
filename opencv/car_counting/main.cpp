@@ -30,6 +30,8 @@ bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intHorizontalLinePosit
 void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 
+const float LINE1_POSITION_PERCENTAGE = 0.9;
+const float LINE2_POSITION_PERCENTAGE = 0.3;
 const float DISTANCE_BTW_LINES = 3.048;
 const bool SHOW_CAR_COUNT = true;
 const bool SHOW_BLOB_INFO = true;
@@ -59,8 +61,8 @@ int main(void) {
     capVideo.read(imgFrame1);
     capVideo.read(imgFrame2);
 
-    int intHorizontalLinePosition = (int)round((double)imgFrame1.rows * 0.90);
-    int intHorizontalLinePosition2 = (int)round((double)imgFrame1.rows * 0.30);
+    int intHorizontalLinePosition = (int)round((double)imgFrame1.rows * LINE1_POSITION_PERCENTAGE);
+    int intHorizontalLinePosition2 = (int)round((double)imgFrame1.rows * LINE2_POSITION_PERCENTAGE);
 
     crossingLine[0].x = 0;
     crossingLine[0].y = intHorizontalLinePosition;
