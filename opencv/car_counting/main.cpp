@@ -34,6 +34,7 @@ void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 
 const float DISTANCE_BTW_LINES = 3.048;
 const bool SHOW_CAR_COUNT = true;
+const bool SHOW_BLOB_INFO = true;
 const bool DEBUG_INFO = false;
 
 int main(void) {
@@ -153,7 +154,9 @@ int main(void) {
         }
         imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
 
-        drawBlobInfoOnImage(blobs, imgFrame2Copy);
+        if (SHOW_BLOB_INFO) {
+            drawBlobInfoOnImage(blobs, imgFrame2Copy);
+        }
         bool blnAtLeastOneBlobCrossedTheLine[2];
         blnAtLeastOneBlobCrossedTheLine[0] = checkIfBlobsCrossedTheLine(blobs, intHorizontalLinePosition, carCount, 0);
         blnAtLeastOneBlobCrossedTheLine[1] = checkIfBlobsCrossedTheLine(blobs, intHorizontalLinePosition2, carCount, 1);
