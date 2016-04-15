@@ -33,6 +33,7 @@ void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 const float LINE1_POSITION_PERCENTAGE = 0.9;
 const float LINE2_POSITION_PERCENTAGE = 0.3;
 const float DISTANCE_BTW_LINES = 3.048;
+const string CAPTURE_VIDEO_URL = "../_vids/original_bridge.mp4";
 const bool SHOW_CAR_COUNT = true;
 const bool SHOW_BLOB_INFO = true;
 const bool SWOW_DEBUG_INFO = false;
@@ -50,7 +51,7 @@ int main(void) {
 
     int carCount = 0;
 
-    capVideo.open("../_vids/original_bridge.mp4");
+    capVideo.open(CAPTURE_VIDEO_URL);
 
     if (!capVideo.isOpened()) {
         cout << "error reading video file" << endl << endl;
