@@ -32,7 +32,7 @@ void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 
 const float LINE1_POSITION_PERCENTAGE = 0.9;
 const float LINE2_POSITION_PERCENTAGE = 0.3;
-const float DISTANCE_BTW_LINES = 3.048;
+const float DISTANCE_BTW_LINES = 20.0;
 const bool VERTICAL_MODE = true;
 const bool CAPTURE_USE_VIDEO = true;
 const string CAPTURE_VIDEO_URL = "../_vids/original_bridge.mp4";
