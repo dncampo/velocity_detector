@@ -34,6 +34,7 @@ bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intHorizontalLinePosit
 void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 
+const float DISTANCE_BTW_LINES = 3.048;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int main(void) {
 
@@ -368,9 +369,9 @@ void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy) {
             p.y += 50;;
 
             cv::putText(imgFrame2Copy, to_string(i), blobs[i].centerPositions.back(), intFontFace, dblFontScale/2, SCALAR_RED, intFontThickness);
-            if (b.getSpeed(30.0)!= 0) {
+            if (b.getSpeed(DISTANCE_BTW_LINES)!= 0) {
                 stringstream stream;
-                stream << fixed << setprecision(1) << b.getSpeed(30.0);
+                stream << fixed << setprecision(1) << b.getSpeed(DISTANCE_BTW_LINES);
                 string s = stream.str();
                 cv::putText(imgFrame2Copy, s + " Km/h" , p, intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
             }
