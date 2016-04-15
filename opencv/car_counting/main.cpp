@@ -35,7 +35,7 @@ const float LINE2_POSITION_PERCENTAGE = 0.3;
 const float DISTANCE_BTW_LINES = 3.048;
 const bool SHOW_CAR_COUNT = true;
 const bool SHOW_BLOB_INFO = true;
-const bool DEBUG_INFO = false;
+const bool SWOW_DEBUG_INFO = false;
 
 int main(void) {
     cv::VideoCapture capVideo;
@@ -95,7 +95,7 @@ int main(void) {
 
         cv::absdiff(imgFrame1Copy, imgFrame2Copy, imgDifference);
         cv::threshold(imgDifference, imgThresh, 30, 255.0, CV_THRESH_BINARY);
-        if (DEBUG_INFO) {
+        if (SWOW_DEBUG_INFO) {
             cv::imshow("imgThresh", imgThresh);
         }
 
@@ -113,7 +113,7 @@ int main(void) {
         vector<vector<cv::Point> > contours;
         cv::findContours(imgThreshCopy, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
-        if (DEBUG_INFO) {
+        if (SWOW_DEBUG_INFO) {
             drawAndShowContours(imgThresh.size(), contours, "imgContours");
         }
         vector<vector<cv::Point> > convexHulls(contours.size());
@@ -121,7 +121,7 @@ int main(void) {
             cv::convexHull(contours[i], convexHulls[i]);
         }
 
-        if (DEBUG_INFO) {
+        if (SWOW_DEBUG_INFO) {
             drawAndShowContours(imgThresh.size(), convexHulls, "imgConvexHulls");
         }
         for (auto &convexHull : convexHulls) {
@@ -137,7 +137,7 @@ int main(void) {
             }
         }
 
-        if (DEBUG_INFO) {
+        if (SWOW_DEBUG_INFO) {
             drawAndShowContours(imgThresh.size(), currentFrameBlobs, "imgCurrentFrameBlobs");
         }
 
@@ -148,7 +148,7 @@ int main(void) {
         } else {
             matchCurrentFrameBlobsToExistingBlobs(blobs, currentFrameBlobs);
         }
-        if (DEBUG_INFO) {
+        if (SWOW_DEBUG_INFO) {
             drawAndShowContours(imgThresh.size(), blobs, "imgBlobs");
         }
         imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
