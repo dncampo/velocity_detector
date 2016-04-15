@@ -158,8 +158,9 @@ int main(void) {
             drawBlobInfoOnImage(blobs, imgFrame2Copy);
         }
         bool blnAtLeastOneBlobCrossedTheLine[2];
+        int falseCarCount = 0;
         blnAtLeastOneBlobCrossedTheLine[0] = checkIfBlobsCrossedTheLine(blobs, intHorizontalLinePosition, carCount, 0);
-        blnAtLeastOneBlobCrossedTheLine[1] = checkIfBlobsCrossedTheLine(blobs, intHorizontalLinePosition2, carCount, 1);
+        blnAtLeastOneBlobCrossedTheLine[1] = checkIfBlobsCrossedTheLine(blobs, intHorizontalLinePosition2, falseCarCount, 1);
 
         if (blnAtLeastOneBlobCrossedTheLine[0] == true) {
             cv::line(imgFrame2Copy, crossingLine[0], crossingLine[1], SCALAR_GREEN, 2);
