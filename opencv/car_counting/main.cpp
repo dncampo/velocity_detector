@@ -33,6 +33,7 @@ void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 const float LINE1_POSITION_PERCENTAGE = 0.9;
 const float LINE2_POSITION_PERCENTAGE = 0.3;
 const float DISTANCE_BTW_LINES = 3.048;
+const bool CAPTURE_USE_VIDEO = true;
 const string CAPTURE_VIDEO_URL = "../_vids/original_bridge.mp4";
 const bool SHOW_CAR_COUNT = true;
 const bool SHOW_BLOB_INFO = true;
@@ -51,15 +52,24 @@ int main(void) {
 
     int carCount = 0;
 
-    capVideo.open(CAPTURE_VIDEO_URL);
+    if (CAPTURE_USE_VIDEO) {
+        capVideo.open(CAPTURE_VIDEO_URL);
+    } else {
+        capVideo.open(0);
+    }
 
     if (!capVideo.isOpened()) {
         cout << "error reading video file" << endl << endl;
         return(0);
     }
 
-    capVideo.read(imgFrame1);
-    capVideo.read(imgFrame2);
+    if (CAPTURE_USE_VIDEO) {
+        capVideo.read(imgFrame1);
+        capVideo.read(imgFrame2);
+    } else {
+        capVideo >> imgFrame1;
+        capVideo >> imgFrame2;
+    }
 
     int intHorizontalLinePosition = (int)round((double)imgFrame1.rows * LINE1_POSITION_PERCENTAGE);
     int intHorizontalLinePosition2 = (int)round((double)imgFrame1.rows * LINE2_POSITION_PERCENTAGE);
@@ -181,12 +191,18 @@ int main(void) {
         // now we prepare for the next iteration
         currentFrameBlobs.clear();
         imgFrame1 = imgFrame2.clone();           // move frame 1 up to where frame 2 is
-        if ((capVideo.get(CV_CAP_PROP_POS_FRAMES) + 1) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
-            capVideo.read(imgFrame2);
+
+        if (CAPTURE_USE_VIDEO) {
+            if ((capVideo.get(CV_CAP_PROP_POS_FRAMES) + 1) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
+                capVideo.read(imgFrame2);
+            } else {
+                cout << "end of video\n";
+                break;
+            }
         } else {
-            cout << "end of video\n";
-            break;
+            capVideo >> imgFrame2;
         }
+
         blnFirstFrame = false;
         frameCount++;
         chCheckForEscKey = cv::waitKey(1);
