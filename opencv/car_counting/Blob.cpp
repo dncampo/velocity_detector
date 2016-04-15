@@ -28,11 +28,12 @@ Blob::Blob(vector<cv::Point> _contour) {
 }
 
 double Blob::getSpeed(float distance){
-    if (speed != 0.0) return speed;
+    if (speed != 0.0 || ts[0] == 0.0 || ts[1] == 0.0 || ts[0] == ts[1]) {
+        return speed;
+    }
     long int delta = abs(ts[1] - ts[0]);
 cout << "ts[0]: "  << ts[0] << "  ts[1]: " << ts[1] << endl;
 
-    if (delta <= 0.0) return 0;
     double deltaH = delta / 1000.0;
     double distanceKM = distance / 1000.0;
     speed = distanceKM / (deltaH / 3600);
