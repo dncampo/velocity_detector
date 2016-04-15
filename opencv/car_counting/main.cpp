@@ -26,7 +26,7 @@ void addNewBlob(Blob &currentFrameBlob, vector<Blob> &existingBlobs);
 double distanceBetweenPoints(cv::Point point1, cv::Point point2);
 void drawAndShowContours(cv::Size imageSize, vector<vector<cv::Point> > contours, string strImageName);
 void drawAndShowContours(cv::Size imageSize, vector<Blob> blobs, string strImageName);
-bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intLinePosition, int &carCount, bool verticalMode, int);
+bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intLinePosition, int &carCount, bool verticalMode, int, const cv::VideoCapture &);
 void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 
@@ -191,8 +191,8 @@ int main(void) {
         }
         bool blnAtLeastOneBlobCrossedTheLine[2];
         int falseCarCount = 0;
-        blnAtLeastOneBlobCrossedTheLine[0] = checkIfBlobsCrossedTheLine(blobs, intLinePosition, carCount, VERTICAL_MODE, 0);
-        blnAtLeastOneBlobCrossedTheLine[1] = checkIfBlobsCrossedTheLine(blobs, intLinePosition2, falseCarCount, VERTICAL_MODE, 1);
+        blnAtLeastOneBlobCrossedTheLine[0] = checkIfBlobsCrossedTheLine(blobs, intLinePosition, carCount, VERTICAL_MODE, 0, capVideo);
+        blnAtLeastOneBlobCrossedTheLine[1] = checkIfBlobsCrossedTheLine(blobs, intLinePosition2, falseCarCount, VERTICAL_MODE, 1, capVideo);
 
         if (blnAtLeastOneBlobCrossedTheLine[0] == true) {
             cv::line(imgFrame2Copy, crossingLine[0], crossingLine[1], SCALAR_GREEN, 2);
@@ -311,28 +311,33 @@ void drawAndShowContours(cv::Size imageSize, vector<Blob> blobs, string strImage
     cv::imshow(strImageName, image);
 }
 
-long int getTs() {
-    struct timeval tp;
-    gettimeofday(&tp, NULL);
-    return tp.tv_sec * 1000 + tp.tv_usec / 1000;
+long int getTs(const cv::VideoCapture &capVideo) {
+    if (CAPTURE_USE_VIDEO) {
+        return capVideo.get(CV_CAP_PROP_POS_MSEC);
+    }
+    else {
+        struct timeval tp;
+        gettimeofday(&tp, NULL);
+        return tp.tv_sec * 1000 + tp.tv_usec / 1000;
+    }
 }
 
-bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intLinePosition, int &carCount, bool verticalMode, int line) {
+bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intLinePosition, int &carCount, bool verticalMode, int line, const cv::VideoCapture &capVideo) {
     bool blnAtLeastOneBlobCrossedTheLine = false;
-    for (int i=0; i<blobs.size(); i++) {
+    for (unsigned i=0; i<blobs.size(); i++) {
         if (blobs[i].blnStillBeingTracked == true && blobs[i].centerPositions.size() >= 2) {
             int prevFrameIndex = (int)blobs[i].centerPositions.size() - 2;
             int currFrameIndex = (int)blobs[i].centerPositions.size() - 1;
             if (verticalMode) {
                 if (blobs[i].centerPositions[prevFrameIndex].y > intLinePosition && blobs[i].centerPositions[currFrameIndex].y <= intLinePosition) {
                     carCount++;
-                    blobs[i].ts[line] = getTs();
+                    blobs[i].ts[line] = getTs(capVideo);
                     blnAtLeastOneBlobCrossedTheLine = true;
                 }
             } else {
                 if (blobs[i].centerPositions[prevFrameIndex].x > intLinePosition && blobs[i].centerPositions[currFrameIndex].x <= intLinePosition) {
                     carCount++;
-                    blobs[i].ts[line] = getTs();
+                    blobs[i].ts[line] = getTs(capVideo);
                     blnAtLeastOneBlobCrossedTheLine = true;
                 }
             }
