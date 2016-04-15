@@ -26,7 +26,7 @@ void addNewBlob(Blob &currentFrameBlob, vector<Blob> &existingBlobs);
 double distanceBetweenPoints(cv::Point point1, cv::Point point2);
 void drawAndShowContours(cv::Size imageSize, vector<vector<cv::Point> > contours, string strImageName);
 void drawAndShowContours(cv::Size imageSize, vector<Blob> blobs, string strImageName);
-bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intHorizontalLinePosition, int &carCount, bool verticalMode, int);
+bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intLinePosition, int &carCount, bool verticalMode, int);
 void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 
