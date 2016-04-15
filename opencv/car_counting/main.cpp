@@ -214,15 +214,12 @@ void matchCurrentFrameBlobsToExistingBlobs(vector<Blob> &existingBlobs, vector<B
                 }
             }
         }
-
         if (dblLeastDistance < currentFrameBlob.dblCurrentDiagonalSize * 0.5) {
             addBlobToExistingBlobs(currentFrameBlob, existingBlobs, intIndexOfLeastDistance);
-        }
-        else {
+        } else {
             addNewBlob(currentFrameBlob, existingBlobs);
         }
     }
-
     for (auto &existingBlob : existingBlobs) {
         if (existingBlob.blnCurrentMatchFoundOrNewBlob == false) {
             existingBlob.intNumOfConsecutiveFramesWithoutAMatch++;
