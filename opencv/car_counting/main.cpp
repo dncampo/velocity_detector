@@ -52,10 +52,9 @@ int main(void) {
 
     capVideo.open("../_vids/original_bridge.mp4");
 
-    if (!capVideo.isOpened()) {                                                 // if unable to open video file
-        cout << "error reading video file" << endl << endl;      // show error message
-       // _getch();                   // it may be necessary to change or remove this line if not using Windows
-        return(0);                                                              // and exit program
+    if (!capVideo.isOpened()) {
+        cout << "error reading video file" << endl << endl;
+        return(0);
     }
 
     capVideo.read(imgFrame1);
