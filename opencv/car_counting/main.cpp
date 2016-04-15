@@ -1,7 +1,6 @@
-// main.cpp
-
 #include<opencv2/core/core.hpp>
 #include<opencv2/highgui/highgui.hpp>
+#include<opencv2/highgui/highgui_c.h>
 #include<opencv2/imgproc/imgproc.hpp>
 
 #include<iostream>
@@ -12,7 +11,6 @@
 #include "Blob.h"
 
 #define SHOW_STEPS            // un-comment or comment this line to show steps or not
-
 
 using namespace std;
 
@@ -35,9 +33,8 @@ void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 
 const float DISTANCE_BTW_LINES = 3.048;
-///////////////////////////////////////////////////////////////////////////////////////////////////
-int main(void) {
 
+int main(void) {
     cv::VideoCapture capVideo;
 
     cv::Mat imgFrame1;
@@ -49,10 +46,8 @@ int main(void) {
     cv::Point crossingLine2[2];
 
     int carCount = 0;
-    
 
     capVideo.open("../_vids/original_bridge.mp4");
-    
 
     if (!capVideo.isOpened()) {                                                 // if unable to open video file
         cout << "error reading video file" << endl << endl;      // show error message
@@ -85,13 +80,9 @@ int main(void) {
     crossingLine2[1].y = intHorizontalLinePosition2;
 
     char chCheckForEscKey = 0;
-
     bool blnFirstFrame = true;
-
     int frameCount = 2;
-
     while (capVideo.isOpened() && chCheckForEscKey != 27) {
-
         vector<Blob> currentFrameBlobs;
 
         cv::Mat imgFrame1Copy = imgFrame1.clone();
@@ -107,9 +98,7 @@ int main(void) {
         cv::GaussianBlur(imgFrame2Copy, imgFrame2Copy, cv::Size(5, 5), 0);
 
         cv::absdiff(imgFrame1Copy, imgFrame2Copy, imgDifference);
-
         cv::threshold(imgDifference, imgThresh, 30, 255.0, CV_THRESH_BINARY);
-
         cv::imshow("imgThresh", imgThresh);
 
         cv::Mat structuringElement3x3 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
@@ -122,26 +111,19 @@ int main(void) {
             cv::dilate(imgThresh, imgThresh, structuringElement5x5);
             cv::erode(imgThresh, imgThresh, structuringElement5x5);
         }
-
         cv::Mat imgThreshCopy = imgThresh.clone();
-
         vector<vector<cv::Point> > contours;
-
         cv::findContours(imgThreshCopy, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
         drawAndShowContours(imgThresh.size(), contours, "imgContours");
-
         vector<vector<cv::Point> > convexHulls(contours.size());
-
         for (unsigned int i = 0; i < contours.size(); i++) {
             cv::convexHull(contours[i], convexHulls[i]);
         }
 
         drawAndShowContours(imgThresh.size(), convexHulls, "imgConvexHulls");
-
         for (auto &convexHull : convexHulls) {
             Blob possibleBlob(convexHull);
-
             if (possibleBlob.currentBoundingRect.area() > 400 &&
                 possibleBlob.dblCurrentAspectRatio > 0.2 &&
                 possibleBlob.dblCurrentAspectRatio < 4.0 &&
@@ -164,7 +146,6 @@ int main(void) {
         }
 
         drawAndShowContours(imgThresh.size(), blobs, "imgBlobs");
-
         imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
 
         drawBlobInfoOnImage(blobs, imgFrame2Copy);
@@ -184,59 +165,40 @@ int main(void) {
         }
 
         drawCarCountOnImage(carCount, imgFrame2Copy);
-
         cv::imshow("imgFrame2Copy", imgFrame2Copy);
 
         //cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
-        
-                // now we prepare for the next iteration
-
+        // now we prepare for the next iteration
         currentFrameBlobs.clear();
-
         imgFrame1 = imgFrame2.clone();           // move frame 1 up to where frame 2 is
-
         if ((capVideo.get(CV_CAP_PROP_POS_FRAMES) + 1) < capVideo.get(CV_CAP_PROP_FRAME_COUNT)) {
             capVideo.read(imgFrame2);
-        }
-        else {
+        } else {
             cout << "end of video\n";
             break;
         }
-
         blnFirstFrame = false;
         frameCount++;
         chCheckForEscKey = cv::waitKey(1);
     }
-
     if (chCheckForEscKey != 27) {               // if the user did not press esc (i.e. we reached the end of the video)
         cv::waitKey(0);                         // hold the windows open to allow the "end of video" message to show
     }
     // note that if the user did press esc, we don't need to hold the windows open, we can simply let the program end which will close the windows
-
     return(0);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void matchCurrentFrameBlobsToExistingBlobs(vector<Blob> &existingBlobs, vector<Blob> &currentFrameBlobs) {
-
     for (auto &existingBlob : existingBlobs) {
-
         existingBlob.blnCurrentMatchFoundOrNewBlob = false;
-
         existingBlob.predictNextPosition();
     }
-
     for (auto &currentFrameBlob : currentFrameBlobs) {
-
         int intIndexOfLeastDistance = 0;
         double dblLeastDistance = 100000.0;
-
         for (unsigned int i = 0; i < existingBlobs.size(); i++) {
-
             if (existingBlobs[i].blnStillBeingTracked == true) {
-
                 double dblDistance = distanceBetweenPoints(currentFrameBlob.centerPositions.back(), existingBlobs[i].predictedNextPosition);
-
                 if (dblDistance < dblLeastDistance) {
                     dblLeastDistance = dblDistance;
                     intIndexOfLeastDistance = i;
@@ -250,26 +212,19 @@ void matchCurrentFrameBlobsToExistingBlobs(vector<Blob> &existingBlobs, vector<B
         else {
             addNewBlob(currentFrameBlob, existingBlobs);
         }
-
     }
 
     for (auto &existingBlob : existingBlobs) {
-
         if (existingBlob.blnCurrentMatchFoundOrNewBlob == false) {
             existingBlob.intNumOfConsecutiveFramesWithoutAMatch++;
         }
-
         if (existingBlob.intNumOfConsecutiveFramesWithoutAMatch >= 5) {
             existingBlob.blnStillBeingTracked = false;
         }
-
     }
-
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void addBlobToExistingBlobs(Blob &currentFrameBlob, vector<Blob> &existingBlobs, int &intIndex) {
-
     existingBlobs[intIndex].currentContour = currentFrameBlob.currentContour;
     existingBlobs[intIndex].currentBoundingRect = currentFrameBlob.currentBoundingRect;
 
@@ -282,47 +237,32 @@ void addBlobToExistingBlobs(Blob &currentFrameBlob, vector<Blob> &existingBlobs,
     existingBlobs[intIndex].blnCurrentMatchFoundOrNewBlob = true;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void addNewBlob(Blob &currentFrameBlob, vector<Blob> &existingBlobs) {
-
     currentFrameBlob.blnCurrentMatchFoundOrNewBlob = true;
-
     existingBlobs.push_back(currentFrameBlob);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 double distanceBetweenPoints(cv::Point point1, cv::Point point2) {
-    
     int intX = abs(point1.x - point2.x);
     int intY = abs(point1.y - point2.y);
-
     return(sqrt(pow(intX, 2) + pow(intY, 2)));
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void drawAndShowContours(cv::Size imageSize, vector<vector<cv::Point> > contours, string strImageName) {
     cv::Mat image(imageSize, CV_8UC3, SCALAR_BLACK);
-
     cv::drawContours(image, contours, -1, SCALAR_WHITE, -1);
-
     cv::imshow(strImageName, image);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void drawAndShowContours(cv::Size imageSize, vector<Blob> blobs, string strImageName) {
-    
     cv::Mat image(imageSize, CV_8UC3, SCALAR_BLACK);
-
     vector<vector<cv::Point> > contours;
-
     for (auto &blob : blobs) {
         if (blob.blnStillBeingTracked == true) {
             contours.push_back(blob.currentContour);
         }
     }
-
     cv::drawContours(image, contours, -1, SCALAR_WHITE, -1);
-
     cv::imshow(strImageName, image);
 }
 
@@ -332,7 +272,6 @@ long int getTs() {
     return tp.tv_sec * 1000 + tp.tv_usec / 1000;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intHorizontalLinePosition, int &carCount, int line) {
     bool blnAtLeastOneBlobCrossedTheLine = false;
     for (int i=0; i<blobs.size(); i++) {
@@ -348,15 +287,11 @@ bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intHorizontalLinePosit
         }
 
     }
-
     return blnAtLeastOneBlobCrossedTheLine;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy) {
-
     for (unsigned int i = 0; i < blobs.size(); i++) {
-
         if (blobs[i].blnStillBeingTracked == true) {
             cv::rectangle(imgFrame2Copy, blobs[i].currentBoundingRect, SCALAR_BLACK, 2);
 
@@ -364,24 +299,22 @@ void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy) {
             double dblFontScale = blobs[i].dblCurrentDiagonalSize / 60.0;
             int intFontThickness = (int)round(dblFontScale * 1.0);
 
-            Blob b = blobs[i];
-            cv::Point p = b.centerPositions.back();
-            p.y += 50;;
+            Blob blob = blobs[i];
+            cv::Point speedLabelPos = blob.centerPositions.back();
+            speedLabelPos.y += 50;;
 
-            cv::putText(imgFrame2Copy, to_string(i), blobs[i].centerPositions.back(), intFontFace, dblFontScale/2, SCALAR_RED, intFontThickness);
-            if (b.getSpeed(DISTANCE_BTW_LINES)!= 0) {
+            cv::putText(imgFrame2Copy, to_string(i), blob.centerPositions.back(), intFontFace, dblFontScale / 2, SCALAR_RED, intFontThickness);
+            if (blob.getSpeed(DISTANCE_BTW_LINES) != 0) {
                 stringstream stream;
-                stream << fixed << setprecision(1) << b.getSpeed(DISTANCE_BTW_LINES);
-                string s = stream.str();
-                cv::putText(imgFrame2Copy, s + " Km/h" , p, intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
+                stream << fixed << setprecision(1) << blob.getSpeed(DISTANCE_BTW_LINES);
+                string speedLabel = stream.str();
+                cv::putText(imgFrame2Copy, speedLabel + " Km/h" , speedLabelPos, intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
             }
         }
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy) {
-
     int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
     double dblFontScale = (imgFrame2Copy.rows * imgFrame2Copy.cols) / 300000.0;
     int intFontThickness = (int)round(dblFontScale * 1.5);
@@ -394,15 +327,4 @@ void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy) {
     ptTextBottomLeftPosition.y = (int)((double)textSize.height * 1.25);
 
     cv::putText(imgFrame2Copy, to_string(carCount), ptTextBottomLeftPosition, intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
-
 }
-
-
-
-
-
-
-
-
-
-
