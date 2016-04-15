@@ -33,6 +33,7 @@ void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 
 const float DISTANCE_BTW_LINES = 3.048;
+const bool SHOW_CAR_COUNT = true;
 const bool DEBUG_INFO = false;
 
 int main(void) {
@@ -167,7 +168,7 @@ int main(void) {
         } else {
             cv::line(imgFrame2Copy, crossingLine2[0], crossingLine2[1], SCALAR_RED, 2);
         }
-        if (DEBUG_INFO) {
+        if (SHOW_CAR_COUNT) {
             drawCarCountOnImage(carCount, imgFrame2Copy);
         }
         cv::imshow("imgFrame2Copy", imgFrame2Copy);
