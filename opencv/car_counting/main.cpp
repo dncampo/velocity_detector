@@ -33,6 +33,7 @@ void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 
 const float DISTANCE_BTW_LINES = 3.048;
+const bool DEBUG_INFO = false;
 
 int main(void) {
     cv::VideoCapture capVideo;
@@ -99,7 +100,9 @@ int main(void) {
 
         cv::absdiff(imgFrame1Copy, imgFrame2Copy, imgDifference);
         cv::threshold(imgDifference, imgThresh, 30, 255.0, CV_THRESH_BINARY);
-        cv::imshow("imgThresh", imgThresh);
+        if (DEBUG_INFO) {
+            cv::imshow("imgThresh", imgThresh);
+        }
 
         cv::Mat structuringElement3x3 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
         cv::Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
@@ -115,13 +118,17 @@ int main(void) {
         vector<vector<cv::Point> > contours;
         cv::findContours(imgThreshCopy, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
-        drawAndShowContours(imgThresh.size(), contours, "imgContours");
+        if (DEBUG_INFO) {
+            drawAndShowContours(imgThresh.size(), contours, "imgContours");
+        }
         vector<vector<cv::Point> > convexHulls(contours.size());
         for (unsigned int i = 0; i < contours.size(); i++) {
             cv::convexHull(contours[i], convexHulls[i]);
         }
 
-        drawAndShowContours(imgThresh.size(), convexHulls, "imgConvexHulls");
+        if (DEBUG_INFO) {
+            drawAndShowContours(imgThresh.size(), convexHulls, "imgConvexHulls");
+        }
         for (auto &convexHull : convexHulls) {
             Blob possibleBlob(convexHull);
             if (possibleBlob.currentBoundingRect.area() > 400 &&
@@ -135,7 +142,9 @@ int main(void) {
             }
         }
 
-        drawAndShowContours(imgThresh.size(), currentFrameBlobs, "imgCurrentFrameBlobs");
+        if (DEBUG_INFO) {
+            drawAndShowContours(imgThresh.size(), currentFrameBlobs, "imgCurrentFrameBlobs");
+        }
 
         if (blnFirstFrame == true) {
             for (auto &currentFrameBlob : currentFrameBlobs) {
@@ -144,8 +153,9 @@ int main(void) {
         } else {
             matchCurrentFrameBlobsToExistingBlobs(blobs, currentFrameBlobs);
         }
-
-        drawAndShowContours(imgThresh.size(), blobs, "imgBlobs");
+        if (DEBUG_INFO) {
+            drawAndShowContours(imgThresh.size(), blobs, "imgBlobs");
+        }
         imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
 
         drawBlobInfoOnImage(blobs, imgFrame2Copy);
@@ -163,8 +173,9 @@ int main(void) {
         } else {
             cv::line(imgFrame2Copy, crossingLine2[0], crossingLine2[1], SCALAR_RED, 2);
         }
-
-        drawCarCountOnImage(carCount, imgFrame2Copy);
+        if (DEBUG_INFO) {
+            drawCarCountOnImage(carCount, imgFrame2Copy);
+        }
         cv::imshow("imgFrame2Copy", imgFrame2Copy);
 
         //cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
