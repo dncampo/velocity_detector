@@ -10,8 +10,6 @@
 
 #include "Blob.h"
 
-#define SHOW_STEPS            // un-comment or comment this line to show steps or not
-
 using namespace std;
 
 // global variables ///////////////////////////////////////////////////////////////////////////////
