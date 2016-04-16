@@ -29,8 +29,9 @@ void drawAndShowContours(cv::Size imageSize, vector<Blob> blobs, string strImage
 bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intLinePosition, int &carCount, bool verticalMode, int, const cv::VideoCapture &);
 void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
+cv::Mat createROIMask(const vector<cv::Point> &ROI);
 
-const float LINE1_POSITION_PERCENTAGE = 0.9;
+const float LINE1_POSITION_PERCENTAGE = 0.7;
 const float LINE2_POSITION_PERCENTAGE = 0.3;
 const float DISTANCE_BTW_LINES = 20.0;
 const bool VERTICAL_MODE = true;
@@ -39,6 +40,7 @@ const string CAPTURE_VIDEO_URL = "../_vids/original_bridge.mp4";
 const bool SHOW_CAR_COUNT = true;
 const bool SHOW_BLOB_INFO = true;
 const bool SHOW_DEBUG_INFO = false;
+
 
 int main(void) {
     cv::VideoCapture capVideo;
@@ -71,6 +73,17 @@ int main(void) {
         capVideo >> imgFrame1;
         capVideo >> imgFrame2;
     }
+
+    cv::Point ROIP0 = cv::Point(600,0);
+    cv::Point ROIP1 = cv::Point(0, 680);
+    cv::Point ROIP2 = cv::Point(745,0);
+    cv::Point ROIP3 = cv::Point(1380,720);
+    vector<cv::Point> ROI(4);
+    ROI[0] = ROIP0;
+    ROI[3] = ROIP1;
+    ROI[1] = ROIP2;
+    ROI[2] = ROIP3;
+
 
     int intLinePosition;
     int intLinePosition2;
@@ -111,21 +124,23 @@ int main(void) {
     char chCheckForEscKey = 0;
     bool blnFirstFrame = true;
     int frameCount = 2;
+    cv::Mat ROIMask = createROIMask(ROI);
+    if (SHOW_DEBUG_INFO) {
+        cv::imshow("ROI mask", ROIMask);
+    }
     while (capVideo.isOpened() && chCheckForEscKey != 27) {
         vector<Blob> currentFrameBlobs;
 
+        cv::bitwise_and(ROIMask,imgFrame1, imgFrame1);
+        cv::bitwise_and(ROIMask, imgFrame2, imgFrame2);
         cv::Mat imgFrame1Copy = imgFrame1.clone();
         cv::Mat imgFrame2Copy = imgFrame2.clone();
-
         cv::Mat imgDifference;
         cv::Mat imgThresh;
-
         cv::cvtColor(imgFrame1Copy, imgFrame1Copy, CV_BGR2GRAY);
         cv::cvtColor(imgFrame2Copy, imgFrame2Copy, CV_BGR2GRAY);
-
         cv::GaussianBlur(imgFrame1Copy, imgFrame1Copy, cv::Size(5, 5), 0);
         cv::GaussianBlur(imgFrame2Copy, imgFrame2Copy, cv::Size(5, 5), 0);
-
         cv::absdiff(imgFrame1Copy, imgFrame2Copy, imgDifference);
         cv::threshold(imgDifference, imgThresh, 30, 255.0, CV_THRESH_BINARY);
 
@@ -195,6 +210,10 @@ int main(void) {
         blnAtLeastOneBlobCrossedTheLine[0] = checkIfBlobsCrossedTheLine(blobs, intLinePosition, carCount, VERTICAL_MODE, 0, capVideo);
         blnAtLeastOneBlobCrossedTheLine[1] = checkIfBlobsCrossedTheLine(blobs, intLinePosition2, falseCarCount, VERTICAL_MODE, 1, capVideo);
 
+        //Draw the ROI
+        cv::line(imgFrame2Copy, ROIP0, ROIP1, SCALAR_YELLOW, 2);
+        cv::line(imgFrame2Copy, ROIP2, ROIP3, SCALAR_WHITE, 2);
+
         if (blnAtLeastOneBlobCrossedTheLine[0] == true) {
             cv::line(imgFrame2Copy, crossingLine[0], crossingLine[1], SCALAR_GREEN, 2);
         } else {
@@ -235,6 +254,25 @@ int main(void) {
     }
     // note that if the user did press esc, we don't need to hold the windows open, we can simply let the program end which will close the windows
     return(0);
+}
+
+cv::Mat createROIMask(const vector<cv::Point> &points) {
+    /* ROI by creating mask for the parallelogram */
+    cv::Mat mask = cv::Mat(720, 1280, CV_8UC1);
+    // Create black image with the same size as the original
+    for(int i=0; i<mask.cols; i++)
+       for(int j=0; j<mask.rows; j++)
+           mask.at<uchar>(cv::Point(i,j)) = 0;
+
+    // Create Polygon from vertices
+    vector<cv::Point> ROI_Poly;
+    cv::approxPolyDP(points, ROI_Poly, 1.0, true);
+
+    // Fill polygon white
+    cv::fillConvexPoly(mask, &points[0], points.size(), 255, 8, 0);
+
+    cv::cvtColor(mask,mask,CV_GRAY2RGB);
+    return mask;
 }
 
 void matchCurrentFrameBlobsToExistingBlobs(vector<Blob> &existingBlobs, vector<Blob> &currentFrameBlobs) {
