@@ -38,7 +38,7 @@ const bool CAPTURE_USE_VIDEO = true;
 const string CAPTURE_VIDEO_URL = "../_vids/original_bridge.mp4";
 const bool SHOW_CAR_COUNT = true;
 const bool SHOW_BLOB_INFO = true;
-const bool SWOW_DEBUG_INFO = false;
+const bool SHOW_DEBUG_INFO = false;
 
 int main(void) {
     cv::VideoCapture capVideo;
@@ -128,7 +128,8 @@ int main(void) {
 
         cv::absdiff(imgFrame1Copy, imgFrame2Copy, imgDifference);
         cv::threshold(imgDifference, imgThresh, 30, 255.0, CV_THRESH_BINARY);
-        if (SWOW_DEBUG_INFO) {
+
+        if (SHOW_DEBUG_INFO) {
             cv::imshow("imgThresh", imgThresh);
         }
 
@@ -146,7 +147,7 @@ int main(void) {
         vector<vector<cv::Point> > contours;
         cv::findContours(imgThreshCopy, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
-        if (SWOW_DEBUG_INFO) {
+        if (SHOW_DEBUG_INFO) {
             drawAndShowContours(imgThresh.size(), contours, "imgContours");
         }
         vector<vector<cv::Point> > convexHulls(contours.size());
@@ -154,7 +155,7 @@ int main(void) {
             cv::convexHull(contours[i], convexHulls[i]);
         }
 
-        if (SWOW_DEBUG_INFO) {
+        if (SHOW_DEBUG_INFO) {
             drawAndShowContours(imgThresh.size(), convexHulls, "imgConvexHulls");
         }
         for (auto &convexHull : convexHulls) {
@@ -170,7 +171,7 @@ int main(void) {
             }
         }
 
-        if (SWOW_DEBUG_INFO) {
+        if (SHOW_DEBUG_INFO) {
             drawAndShowContours(imgThresh.size(), currentFrameBlobs, "imgCurrentFrameBlobs");
         }
 
@@ -181,7 +182,7 @@ int main(void) {
         } else {
             matchCurrentFrameBlobsToExistingBlobs(blobs, currentFrameBlobs);
         }
-        if (SWOW_DEBUG_INFO) {
+        if (SHOW_DEBUG_INFO) {
             drawAndShowContours(imgThresh.size(), blobs, "imgBlobs");
         }
         imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
