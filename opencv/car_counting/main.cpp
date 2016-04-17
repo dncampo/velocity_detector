@@ -31,17 +31,29 @@ void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 cv::Mat createROIMask(const vector<cv::Point> &ROI);
 
-const float LINE1_POSITION_PERCENTAGE = 0.7;
-const float LINE2_POSITION_PERCENTAGE = 0.3;
-const float DISTANCE_BTW_LINES = 20.0;
-const bool VERTICAL_MODE = true;
+//Brige (original example)
+//const float LINE1_POSITION_PERCENTAGE = 0.7;
+//const float LINE2_POSITION_PERCENTAGE = 0.3;
+//const float DISTANCE_BTW_LINES = 20.0;
+//const bool VERTICAL_MODE = true;
+//const bool CAPTURE_USE_VIDEO = true;
+//const string CAPTURE_VIDEO_URL = "../_vids/original_bridge.mp4";
+//const bool USE_MASK = false;
+//const bool SHOW_CAR_COUNT = true;
+//const bool SHOW_BLOB_INFO = true;
+//const bool SHOW_DEBUG_INFO = false;
+
+//David's car
+const float LINE1_POSITION_PERCENTAGE = 0.74;
+const float LINE2_POSITION_PERCENTAGE = 0.32;
+const float DISTANCE_BTW_LINES = 5.6;
+const bool VERTICAL_MODE = false;
 const bool CAPTURE_USE_VIDEO = true;
-const string CAPTURE_VIDEO_URL = "../_vids/original_bridge.mp4";
+const string CAPTURE_VIDEO_URL = "../_vids/test_30kmh.mp4";
 const bool USE_MASK = false;
 const bool SHOW_CAR_COUNT = true;
 const bool SHOW_BLOB_INFO = true;
 const bool SHOW_DEBUG_INFO = false;
-
 
 int main(void) {
     cv::VideoCapture capVideo;
