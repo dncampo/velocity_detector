@@ -37,6 +37,7 @@ const float DISTANCE_BTW_LINES = 20.0;
 const bool VERTICAL_MODE = true;
 const bool CAPTURE_USE_VIDEO = true;
 const string CAPTURE_VIDEO_URL = "../_vids/original_bridge.mp4";
+const bool USE_MASK = false;
 const bool SHOW_CAR_COUNT = true;
 const bool SHOW_BLOB_INFO = true;
 const bool SHOW_DEBUG_INFO = false;
@@ -131,8 +132,10 @@ int main(void) {
     while (capVideo.isOpened() && chCheckForEscKey != 27) {
         vector<Blob> currentFrameBlobs;
 
-        cv::bitwise_and(ROIMask,imgFrame1, imgFrame1);
-        cv::bitwise_and(ROIMask, imgFrame2, imgFrame2);
+        if (USE_MASK) {
+            cv::bitwise_and(ROIMask,imgFrame1, imgFrame1);
+            cv::bitwise_and(ROIMask, imgFrame2, imgFrame2);
+        }
         cv::Mat imgFrame1Copy = imgFrame1.clone();
         cv::Mat imgFrame2Copy = imgFrame2.clone();
         cv::Mat imgDifference;
@@ -211,8 +214,10 @@ int main(void) {
         blnAtLeastOneBlobCrossedTheLine[1] = checkIfBlobsCrossedTheLine(blobs, intLinePosition2, falseCarCount, VERTICAL_MODE, 1, capVideo);
 
         //Draw the ROI
-        cv::line(imgFrame2Copy, ROIP0, ROIP1, SCALAR_YELLOW, 2);
-        cv::line(imgFrame2Copy, ROIP2, ROIP3, SCALAR_WHITE, 2);
+        if (USE_MASK) {
+            cv::line(imgFrame2Copy, ROIP0, ROIP1, SCALAR_YELLOW, 2);
+            cv::line(imgFrame2Copy, ROIP2, ROIP3, SCALAR_WHITE, 2);
+        }
 
         if (blnAtLeastOneBlobCrossedTheLine[0] == true) {
             cv::line(imgFrame2Copy, crossingLine[0], crossingLine[1], SCALAR_GREEN, 2);
