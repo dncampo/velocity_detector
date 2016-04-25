@@ -19,6 +19,13 @@ const cv::Scalar SCALAR_YELLOW = cv::Scalar(0.0, 255.0, 255.0);
 const cv::Scalar SCALAR_GREEN = cv::Scalar(0.0, 255.0, 0.0);
 const cv::Scalar SCALAR_RED = cv::Scalar(0.0, 0.0, 255.0);
 
+int MIN_CURRENT_BOUNDING_RECT_AREA = 400;
+int MIN_CURRENT_BOUNDING_RECT_WIDTH = 30;
+int MIN_CURRENT_BOUNDING_RECT_HEIGHT = 30;
+int MIN_CURRENT_DIAGONAL_SIZE = 60;
+float MIN_CURRENT_ASPECT_RATIO = 0.2;
+float MAX_CURRENT_ASPECT_RATIO = 4.0;
+float MIN_RATIO_CONTOUR_VS_BOUNDING_RECT_AREA = 0.50;
 // function prototypes ////////////////////////////////////////////////////////////////////////////
 void matchCurrentFrameBlobsToExistingBlobs(vector<Blob> &existingBlobs, vector<Blob> &currentFrameBlobs);
 void addBlobToExistingBlobs(Blob &currentFrameBlob, vector<Blob> &existingBlobs, int &intIndex);
@@ -26,32 +33,35 @@ void addNewBlob(Blob &currentFrameBlob, vector<Blob> &existingBlobs);
 double distanceBetweenPoints(cv::Point point1, cv::Point point2);
 void drawAndShowContours(cv::Size imageSize, vector<vector<cv::Point> > contours, string strImageName);
 void drawAndShowContours(cv::Size imageSize, vector<Blob> blobs, string strImageName);
-bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intLinePosition, int &carCount, bool verticalMode, int, const cv::VideoCapture &);
+bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intLinePosition, int &carCount, bool verticalMode, int, cv::VideoCapture &);
 void drawBlobInfoOnImage(vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
 void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 cv::Mat createROIMask(const vector<cv::Point> &ROI);
 
-//Brige (original example)
-//const float LINE1_POSITION_PERCENTAGE = 0.7;
-//const float LINE2_POSITION_PERCENTAGE = 0.3;
-//const float DISTANCE_BTW_LINES = 20.0;
-//const bool VERTICAL_MODE = true;
-//const bool CAPTURE_USE_VIDEO = true;
-//const string CAPTURE_VIDEO_URL = "../_vids/original_bridge.mp4";
-//const bool USE_MASK = false;
-//const bool SHOW_CAR_COUNT = true;
-//const bool SHOW_BLOB_INFO = true;
-//const bool SHOW_DEBUG_INFO = false;
-
+//Brige (original example) 
+/*
+const float LINE1_POSITION_PERCENTAGE = 0.7;
+const float LINE2_POSITION_PERCENTAGE = 0.3;
+const float DISTANCE_BTW_LINES = 20.0;
+const bool VERTICAL_MODE = true;
+const bool CAPTURE_USE_VIDEO = true;
+const string CAPTURE_VIDEO_URL = "../_vids/original_bridge_320_12fps.m4v";
+const bool USE_MASK = false;
+const bool SHOW_VIDEO = true;
+const bool SHOW_CAR_COUNT = true;
+const bool SHOW_BLOB_INFO = true;
+const bool SHOW_DEBUG_INFO = false;
+*/
 //David's car
 const float LINE1_POSITION_PERCENTAGE = 0.74;
 const float LINE2_POSITION_PERCENTAGE = 0.32;
 const float DISTANCE_BTW_LINES = 5.6;
 const bool VERTICAL_MODE = false;
 const bool CAPTURE_USE_VIDEO = true;
-const string CAPTURE_VIDEO_URL = "../_vids/test_30kmh.mp4";
+const string CAPTURE_VIDEO_URL = "../_vids/test_20kmh_vga_24fps.m4v";
 const bool USE_MASK = false;
 const bool SHOW_CAR_COUNT = true;
+const bool SHOW_VIDEO = true;
 const bool SHOW_BLOB_INFO = true;
 const bool SHOW_DEBUG_INFO = false;
 
@@ -190,13 +200,13 @@ int main(void) {
         }
         for (auto &convexHull : convexHulls) {
             Blob possibleBlob(convexHull);
-            if (possibleBlob.currentBoundingRect.area() > 400 &&
-                possibleBlob.dblCurrentAspectRatio > 0.2 &&
-                possibleBlob.dblCurrentAspectRatio < 4.0 &&
-                possibleBlob.currentBoundingRect.width > 30 &&
-                possibleBlob.currentBoundingRect.height > 30 &&
-                possibleBlob.dblCurrentDiagonalSize > 60.0 &&
-                (cv::contourArea(possibleBlob.currentContour) / (double)possibleBlob.currentBoundingRect.area()) > 0.50) {
+            if (possibleBlob.currentBoundingRect.area() > MIN_CURRENT_BOUNDING_RECT_AREA &&
+                possibleBlob.dblCurrentAspectRatio > MIN_CURRENT_ASPECT_RATIO &&
+                possibleBlob.dblCurrentAspectRatio < MAX_CURRENT_ASPECT_RATIO &&
+                possibleBlob.currentBoundingRect.width > MIN_CURRENT_BOUNDING_RECT_WIDTH &&
+                possibleBlob.currentBoundingRect.height > MIN_CURRENT_BOUNDING_RECT_HEIGHT &&
+                possibleBlob.dblCurrentDiagonalSize > MIN_CURRENT_DIAGONAL_SIZE &&
+                (cv::contourArea(possibleBlob.currentContour) / (double)possibleBlob.currentBoundingRect.area()) > MIN_RATIO_CONTOUR_VS_BOUNDING_RECT_AREA) {
                 currentFrameBlobs.push_back(possibleBlob);
             }
         }
@@ -231,20 +241,22 @@ int main(void) {
             cv::line(imgFrame2Copy, ROIP2, ROIP3, SCALAR_WHITE, 2);
         }
 
-        if (blnAtLeastOneBlobCrossedTheLine[0] == true) {
-            cv::line(imgFrame2Copy, crossingLine[0], crossingLine[1], SCALAR_GREEN, 2);
-        } else {
-            cv::line(imgFrame2Copy, crossingLine[0], crossingLine[1], SCALAR_RED, 2);
+        if (SHOW_VIDEO) {            
+            if (blnAtLeastOneBlobCrossedTheLine[0] == true) {
+                cv::line(imgFrame2Copy, crossingLine[0], crossingLine[1], SCALAR_GREEN, 2);
+            } else {
+                cv::line(imgFrame2Copy, crossingLine[0], crossingLine[1], SCALAR_RED, 2);
+            }
+            if (blnAtLeastOneBlobCrossedTheLine[1] == true) {
+                cv::line(imgFrame2Copy, crossingLine2[0], crossingLine2[1], SCALAR_GREEN, 2);
+            } else {
+                cv::line(imgFrame2Copy, crossingLine2[0], crossingLine2[1], SCALAR_RED, 2);
+            }
+            if (SHOW_CAR_COUNT) {
+                drawCarCountOnImage(carCount, imgFrame2Copy);
+            }
+            cv::imshow("imgFrame2Copy", imgFrame2Copy);
         }
-        if (blnAtLeastOneBlobCrossedTheLine[1] == true) {
-            cv::line(imgFrame2Copy, crossingLine2[0], crossingLine2[1], SCALAR_GREEN, 2);
-        } else {
-            cv::line(imgFrame2Copy, crossingLine2[0], crossingLine2[1], SCALAR_RED, 2);
-        }
-        if (SHOW_CAR_COUNT) {
-            drawCarCountOnImage(carCount, imgFrame2Copy);
-        }
-        cv::imshow("imgFrame2Copy", imgFrame2Copy);
 
         //cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
         // now we prepare for the next iteration
@@ -367,7 +379,7 @@ void drawAndShowContours(cv::Size imageSize, vector<Blob> blobs, string strImage
     cv::imshow(strImageName, image);
 }
 
-long int getTs(const cv::VideoCapture &capVideo) {
+long int getTs(cv::VideoCapture &capVideo) {
     if (CAPTURE_USE_VIDEO) {
         return capVideo.get(CV_CAP_PROP_POS_MSEC);
     }
@@ -378,7 +390,7 @@ long int getTs(const cv::VideoCapture &capVideo) {
     }
 }
 
-bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intLinePosition, int &carCount, bool verticalMode, int line, const cv::VideoCapture &capVideo) {
+bool checkIfBlobsCrossedTheLine(vector<Blob> &blobs, int &intLinePosition, int &carCount, bool verticalMode, int line, cv::VideoCapture &capVideo) {
     bool blnAtLeastOneBlobCrossedTheLine = false;
     for (unsigned i=0; i<blobs.size(); i++) {
         if (blobs[i].blnStillBeingTracked == true && blobs[i].centerPositions.size() >= 2) {
