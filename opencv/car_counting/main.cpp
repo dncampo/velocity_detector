@@ -19,12 +19,12 @@ const cv::Scalar SCALAR_YELLOW = cv::Scalar(0.0, 255.0, 255.0);
 const cv::Scalar SCALAR_GREEN = cv::Scalar(0.0, 255.0, 0.0);
 const cv::Scalar SCALAR_RED = cv::Scalar(0.0, 0.0, 255.0);
 
-int MIN_CURRENT_BOUNDING_RECT_AREA = 400;
-int MIN_CURRENT_BOUNDING_RECT_WIDTH = 30;
-int MIN_CURRENT_BOUNDING_RECT_HEIGHT = 30;
-int MIN_CURRENT_DIAGONAL_SIZE = 60;
-float MIN_CURRENT_ASPECT_RATIO = 0.2;
-float MAX_CURRENT_ASPECT_RATIO = 4.0;
+int MIN_CURRENT_BOUNDING_RECT_AREA = 300;
+int MIN_CURRENT_BOUNDING_RECT_WIDTH = 150;
+int MIN_CURRENT_BOUNDING_RECT_HEIGHT = 100;
+int MIN_CURRENT_DIAGONAL_SIZE = 190;
+float MIN_CURRENT_ASPECT_RATIO = 1.0;
+float MAX_CURRENT_ASPECT_RATIO = 2.5;
 float MIN_RATIO_CONTOUR_VS_BOUNDING_RECT_AREA = 0.50;
 // function prototypes ////////////////////////////////////////////////////////////////////////////
 void matchCurrentFrameBlobsToExistingBlobs(vector<Blob> &existingBlobs, vector<Blob> &currentFrameBlobs);
@@ -39,20 +39,21 @@ void drawCarCountOnImage(int &carCount, cv::Mat &imgFrame2Copy);
 cv::Mat createROIMask(const vector<cv::Point> &ROI);
 
 //Brige (original example) 
-/*
+
 const float LINE1_POSITION_PERCENTAGE = 0.7;
 const float LINE2_POSITION_PERCENTAGE = 0.3;
-const float DISTANCE_BTW_LINES = 20.0;
-const bool VERTICAL_MODE = true;
+const float DISTANCE_BTW_LINES = 4.8;
+const bool VERTICAL_MODE = false;
 const bool CAPTURE_USE_VIDEO = true;
-const string CAPTURE_VIDEO_URL = "../_vids/original_bridge_320_12fps.m4v";
+const string CAPTURE_VIDEO_URL = "../_vids/vga_cam_20kmh.mp4";
 const bool USE_MASK = false;
 const bool SHOW_VIDEO = true;
 const bool SHOW_CAR_COUNT = true;
 const bool SHOW_BLOB_INFO = true;
 const bool SHOW_DEBUG_INFO = false;
-*/
+
 //David's car
+/*
 const float LINE1_POSITION_PERCENTAGE = 0.74;
 const float LINE2_POSITION_PERCENTAGE = 0.32;
 const float DISTANCE_BTW_LINES = 5.6;
@@ -64,7 +65,7 @@ const bool SHOW_CAR_COUNT = true;
 const bool SHOW_VIDEO = true;
 const bool SHOW_BLOB_INFO = true;
 const bool SHOW_DEBUG_INFO = false;
-
+*/
 int main(void) {
     cv::VideoCapture capVideo;
 
